@@ -11,6 +11,15 @@
     />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><rect width=%2232%22 height=%2232%22 rx=%224%22 fill=%22%2314181c%22/><ellipse cx=%2211%22 cy=%2216%22 rx=%224.5%22 ry=%228%22 fill=%22none%22 stroke=%22%23ff8a1f%22 stroke-width=%223%22/><ellipse cx=%2221%22 cy=%2216%22 rx=%224.5%22 ry=%228%22 fill=%22none%22 stroke=%22%234db2ff%22 stroke-width=%223%22/></svg>" />
     <title>Atlas Test Facility</title>
+    <script>
+    (function(apiKey){
+        (function(p,e,n,d,o){var v,w,x,y,z;o=p[d]=p[d]||{};o._q=o._q||[];
+        v=['initialize','identify','updateOptions','pageLoad','track', 'trackAgent'];for(w=0,x=v.length;w<x;++w)(function(m){
+        o[m]=o[m]||function(){o._q[m===v[0]?'unshift':'push']([m].concat([].slice.call(arguments,0)));};})(v[w]);
+        y=e.createElement(n);y.async=!0;y.src='https://cdn.pendo-atlas.pendo-dev.com/agent/static/'+apiKey+'/pendo.js';
+        z=e.getElementsByTagName(n)[0];z.parentNode.insertBefore(y,z);})(window,document,'script','pendo');
+    })('d4e75128-65d8-44ff-970b-e9c1884e3289');
+    </script>
   </head>
   <body>
     <div id="root"></div>

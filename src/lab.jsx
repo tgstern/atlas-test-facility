@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { accounts, people } from './people.js'
+import { accounts, people, sessionIdentity } from './people.js'
 import { assets, chambers } from './data.js'
 
 const KEY = 'atlas:v1'
@@ -43,6 +43,13 @@ export function LabProvider({ children }) {
   const persona = people.find((p) => p.id === state.personaId) ?? null
   const account = persona ? accounts[persona.account] : accounts.none
 
+  // Identify the signed-in persona to Pendo on badge scan, badge switch, and on
+  // reload (the persona is restored from localStorage). Anonymous personas keep
+  // the anonymous visitor that main.jsx initialized.
+  useEffect(() => {
+    if (persona && !persona.anonymous) window.pendo.identify(sessionIdentity(persona, account))
+  }, [persona, account])
+
   useEffect(() => {
     try {
       localStorage.setItem(KEY, JSON.stringify(state))
@@ -78,8 +85,15 @@ export function LabProvider({ children }) {
       toasts,
       toast,
       dismissToast: (id) => setToasts((t) => t.filter((x) => x.id !== id)),
-      signIn: (personaId) => patch(() => ({ personaId })),
-      signOut: () => patch(() => ({ personaId: null })),
+      signIn: (personaId) => {
+        // Switching to the anonymous badge must not stay tracked as the previous visitor.
+        if (people.find((p) => p.id === personaId)?.anonymous) window.pendo?.clearSession?.()
+        patch(() => ({ personaId }))
+      },
+      signOut: () => {
+        window.pendo?.clearSession?.()
+        patch(() => ({ personaId: null }))
+      },
       setFlag: (flag, v) => patch((s) => ({ flags: { ...s.flags, [flag]: v } })),
       temp: (c) => (state.flags.fahrenheit ? `${((c * 9) / 5 + 32).toFixed(1)} °F` : `${c.toFixed(1)} °C`),
       togglePin: (id) => patch((s) => ({ pinned: s.pinned.includes(id) ? s.pinned.filter((p) => p !== id) : [...s.pinned, id] })),
