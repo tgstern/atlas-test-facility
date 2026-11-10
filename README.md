@@ -13,16 +13,17 @@ npm install
 npm run dev      # http://localhost:5176
 ```
 
-No Pendo snippet ships with the app; the install adds it. On every identity change
-the app sets `window.labIdentity` and calls `window.pendo?.identify(...)`. If your
-install calls `pendo.initialize(...)`, pass `window.labIdentity` to start with the
-right visitor. Key actions fire `pendo.track(...)` events; grep `track(` for the list.
+No Pendo snippet ships with the app, and the app never calls `pendo.identify` itself;
+the install adds that. The signed-in visitor is `persona` and its department is
+`account`, both from `useLab()` (`LabProvider` in `src/lab.jsx`). `persona` is `null`
+when signed out. `sessionIdentity()` in `src/people.js` maps them to visitor and
+account fields. Key actions fire `pendo.track(...)` events; grep `track(` for the list.
 
 ## Visitors
 
 Signed-out visitors land on `/gate`, a badge check-in screen. Presenting a badge signs
 in and returns to the page you wanted. **Switch badge** and **Sign out** are in the user
-menu (`#user-chip`). `?as=<id>` signs in directly and is removed from the URL on load.
+menu (`#user-chip`).
 The choice persists in `localStorage`. Orientation progress and bookings are tracked
 per visitor, so switching badges never leaks one visitor's state into another's.
 

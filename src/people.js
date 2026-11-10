@@ -90,10 +90,10 @@ export const people = [
   },
 ]
 
-export const anonymousOptions = { visitor: { id: '' }, account: { id: '' } }
+export const anonymousIdentity = { visitor: { id: '' }, account: { id: '' } }
 
-export function pendoOptions(person, account) {
-  if (!person || person.anonymous) return anonymousOptions
+export function sessionIdentity(person, account) {
+  if (!person || person.anonymous) return anonymousIdentity
   return {
     visitor: {
       id: person.email,

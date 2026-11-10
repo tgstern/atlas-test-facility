@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { alerts, assetTypes, procedures, stations } from './data.js'
-import { pendoOptions } from './people.js'
+import { anonymousIdentity, sessionIdentity } from './people.js'
 import { track, useLab } from './lab.jsx'
 import { Icon, Led, Modal, Switch, useOutside } from './ui.jsx'
 
@@ -294,7 +294,7 @@ export function Console() {
   }, [open])
 
   const agent = window.pendo?.isReady?.() ? 'ready' : window.pendo ? 'loading' : 'not installed'
-  const identity = persona ? pendoOptions(persona, account) : window.labIdentity
+  const identity = persona ? sessionIdentity(persona, account) : anonymousIdentity
 
   return (
     <div className="console">
@@ -307,7 +307,7 @@ export function Console() {
             <span>Pendo agent</span><code id="agent-status">{agent}</code>
           </div>
           <details>
-            <summary>Identity sent to Pendo</summary>
+            <summary>Current visitor</summary>
             <pre id="identity-json">{JSON.stringify(identity, null, 2)}</pre>
           </details>
           <div className="switches">

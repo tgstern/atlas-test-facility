@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { accounts, anonymousOptions, pendoOptions, people } from './people.js'
+import { accounts, people } from './people.js'
 import { assets, chambers } from './data.js'
 
 const KEY = 'atlas:v1'
@@ -19,13 +19,6 @@ const defaults = {
   customAssets: [],
 }
 
-const asParam = new URLSearchParams(window.location.search).get('as')
-if (asParam !== null) {
-  const url = new URL(window.location.href)
-  url.searchParams.delete('as')
-  window.history.replaceState(window.history.state, '', url)
-}
-
 function load() {
   let saved = {}
   try {
@@ -33,7 +26,6 @@ function load() {
   } catch {}
   const state = { ...defaults, ...saved, flags: { ...defaults.flags, ...saved.flags } }
   if (typeof state.onboardingDismissed !== 'object') state.onboardingDismissed = {}
-  if (people.some((p) => p.id === asParam)) state.personaId = asParam
   if (state.personaId && !people.some((p) => p.id === state.personaId)) state.personaId = null
   return state
 }
@@ -61,12 +53,6 @@ export function LabProvider({ children }) {
     document.documentElement.dataset.theme = state.flags.dark ? 'dark' : 'light'
     document.documentElement.dataset.density = state.flags.compact ? 'compact' : 'comfortable'
   }, [state.flags.dark, state.flags.compact])
-
-  useEffect(() => {
-    const options = persona ? pendoOptions(persona, account) : anonymousOptions
-    window.labIdentity = options
-    window.pendo?.identify?.(options)
-  }, [persona, account])
 
   const toast = useCallback((message, tone = 'ok') => {
     const id = `${Date.now()}-${Math.random()}`
