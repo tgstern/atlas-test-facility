@@ -104,6 +104,7 @@ export function sessionIdentity(person, account) {
       tenure_days: person.tenureDays,
       is_new: person.tenureDays < 7,
       cleared_stations: person.trained.length,
+      account_id: account.id,
     },
     account: {
       id: account.id,
