@@ -61,7 +61,7 @@ export default function Personnel() {
                 <td><strong>{p.name}</strong><small className="block muted">{p.title}</small></td>
                 <td>{accounts[p.account].name}</td>
                 <td>
-                  <select id={`role-${p.id}`} className="input" disabled={!isAdmin || p.id === 'voss'} value={roles[p.id] ?? p.role} onChange={(e) => { setRoles({ ...roles, [p.id]: e.target.value }); toast(`${p.name} is now ${e.target.value}`); track('role_changed', { role: e.target.value }) }}>
+                  <select id={`role-${p.id}`} className="input" disabled={!isAdmin || p.id === 'voss'} value={roles[p.id] ?? p.role} onChange={(e) => { const previous = roles[p.id] ?? p.role; setRoles({ ...roles, [p.id]: e.target.value }); toast(`${p.name} is now ${e.target.value}`); track('role_changed', { role: e.target.value }); track('Role changed', { role: e.target.value, previous_role: previous, member_department: accounts[p.account].id, department: account.id }) }}>
                     {['admin', 'manager', 'member', 'viewer'].map((r) => <option key={r}>{r}</option>)}
                   </select>
                 </td>
@@ -75,7 +75,7 @@ export default function Personnel() {
 
       {inviting && (
         <Modal title="Invite personnel" id="invite-modal" onClose={() => setInviting(false)} footer={
-          <button className="btn primary" id="btn-send-invite" disabled={!email.includes('@')} onClick={() => { setInviting(false); toast(`Invite sent to ${email}`); track('personnel_invited', { role: inviteRole }); setEmail('') }}>Send invite</button>
+          <button className="btn primary" id="btn-send-invite" disabled={!email.includes('@')} onClick={() => { setInviting(false); toast(`Invite sent to ${email}`); track('personnel_invited', { role: inviteRole }); track('Personnel invited', { role: inviteRole, department: account.id }); setEmail('') }}>Send invite</button>
         }>
           <div className="form">
             <label>Email<input id="invite-email" className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@atlas.test" /></label>

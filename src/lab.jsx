@@ -1,8 +1,14 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { accounts, people, sessionIdentity } from './people.js'
-import { assets, chambers } from './data.js'
+import { alerts, assets, chambers } from './data.js'
 
 const KEY = 'atlas:v1'
+
+// Orientation checklist step keys (mirrors the steps rendered on the Overview page).
+const ONBOARDING_STEPS = ['chamber', 'panels', 'reserve', 'procedure']
+
+// Visitors already reported as completing orientation this browser session; survives remounts.
+const orientationCompleted = new Set()
 
 const defaults = {
   personaId: null,
@@ -103,14 +109,47 @@ export function LabProvider({ children }) {
       addRun: (r) => patch((s) => ({ runs: [{ ...r, id: `run-${Date.now()}` }, ...s.runs] })),
       onboarding: state.onboarding[persona?.id] ?? {},
       onboardingDismissed: !!state.onboardingDismissed[persona?.id],
-      markStep: (key) =>
+      markStep: (key) => {
+        const id = state.personaId
+        const progress = state.onboarding[id] ?? {}
+        // Orientation checklist completed: this step is the last of the four still open for a new user.
+        if (
+          id &&
+          persona?.tenureDays < 7 &&
+          !progress[key] &&
+          !orientationCompleted.has(id) &&
+          ONBOARDING_STEPS.every((k) => k === key || progress[k])
+        ) {
+          orientationCompleted.add(id)
+          track('Orientation checklist completed', {
+            role: persona.role,
+            department: account.id,
+            final_step: key,
+            steps_completed: ONBOARDING_STEPS.length,
+            tenure_days: persona.tenureDays,
+          })
+        }
         setState((s) => {
           const id = s.personaId
           if (!id || s.onboarding[id]?.[key]) return s
           return { ...s, onboarding: { ...s.onboarding, [id]: { ...s.onboarding[id], [key]: true } } }
-        }),
+        })
+      },
       dismissOnboarding: () => patch((s) => ({ onboardingDismissed: { ...s.onboardingDismissed, [s.personaId]: true } })),
-      ackAlert: (id) => patch((s) => ({ alertsAcked: [...s.alertsAcked, id] })),
+      ackAlert: (id) => {
+        // Alert acknowledged: the alert leaves the open list and the bell count.
+        if (!state.alertsAcked.includes(id)) {
+          const alert = alerts.find((a) => a.id === id)
+          track('Alert acknowledged', {
+            alert_id: id,
+            alert_level: alert?.level ?? 'unknown',
+            role: role ?? 'none',
+            department: account.id,
+            open_alerts_remaining: alerts.filter((a) => a.id !== id && !state.alertsAcked.includes(a.id)).length,
+          })
+        }
+        patch((s) => ({ alertsAcked: [...s.alertsAcked, id] }))
+      },
       setStatus: (id, status) => patch((s) => ({ statuses: { ...s.statuses, [id]: status } })),
       addComment: (id, comment) => patch((s) => ({ comments: { ...s.comments, [id]: [...(s.comments[id] ?? []), comment] } })),
       addChamber: (chamber) => patch((s) => ({ customChambers: [chamber, ...s.customChambers] })),

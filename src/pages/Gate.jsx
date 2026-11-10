@@ -31,6 +31,13 @@ export default function Gate() {
   const enter = (p) => {
     signIn(p.id)
     track('badge_scan', { role: p.role })
+    // Signed in to facility: visitor session established for the chosen persona.
+    track('Signed in to facility', {
+      role: p.role,
+      department: accounts[p.account].id,
+      is_anonymous: !!p.anonymous,
+      is_new_user: p.tenureDays < 7,
+    })
     navigate(location.state?.from ?? '/', { replace: true })
   }
 
